@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import collections,sys,struct
 reload(sys)
 sys.setdefaultencoding('utf-8')
@@ -161,12 +162,16 @@ class ProtoParser:
     #根据协议描述文本，将字典d序列化为16进制字符串
     def _dumps(self,text,d,lenth):#text为协议描述文本字典，d为待序列化字典,nums表示数组个数
         binstr=''
+        isTuple = False
         if lenth==-1:#不定长数组
             lenth = len(d)#若为不定长数组，d应该是个元组,length为元组长度
+            isTuple = True#不定长数组对应的应该是元组
             binstr+=struct.pack('<H',lenth).encode("hex")#在字符串中加入长度        
-        if lenth==1:#d为一个字典，而非元组
+        if lenth==1 and isTuple==False:#d为一个字典，而非元组
             for key in text:
                 value = text[key]
+                if d.has_key(key)==False or d[key]==None:
+                    continue
                 if isinstance(value[0],dict):
                     binstr+=self._dumps(value[0],d[key],value[1])
                 else:
@@ -176,6 +181,8 @@ class ProtoParser:
                 data = d[i]
                 for key in text:
                     value = text[key]#value=(type,nums)
+                    if data.has_key(key)==False or data[key]==None:
+                        continue
                     if isinstance(value[0],dict):#解析dict
                         binstr+=self._dumps(value[0],data[key],value[1])
                     else:#解析基本类型
@@ -261,16 +268,17 @@ class ProtoParser:
         self.index_s = 0
         return self._loads(self.textdict,binstr)
 
-filename = "a.proto.txt"
+filename = "a.proto"
 a1 = ProtoParser()
 a1.buildDesc(filename)
 print a1.textdict
+
 obj = {
 	"name": "骨精灵",
 	"id": 5201314,
 	"married": False,
-	"friends": (5201315,),
-	"position": (134.5, 0.0, 23.41),
+	"friends": (),
+	"position": None,
 	"pet": {
 		"name": "骨精灵的小可爱",
 		"skill": (
@@ -280,8 +288,10 @@ obj = {
 			{
 				"id": 2,
 			})
-	}
+	},
+    "none":({"n":{}},)
 }
+
 binstr = a1.dumps(obj)
 print binstr
 
