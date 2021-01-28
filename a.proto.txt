@@ -1,0 +1,9 @@
+{string name;    int32 id;        
+   bool married;    int32[] friends;
+   float[3]position; {
+     string name;
+     {
+        uint16 id;   
+     }[2]skill; }pet;
+   
+}
